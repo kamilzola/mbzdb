@@ -403,31 +403,49 @@ sub mbz_pad_right {
 #         problems.
 sub mbz_raw_download {
 	my $host = 'ftp.musicbrainz.org';
+	my $path = '/pub/musicbrainz/data/fullexport';
 	my @files;
 	
 	# find out the latest NGS
 	my $latest = "";
-	print "Logging into MusicBrainz FTP ($host)...\n";
-	my $ftp = Net::FTP->new($host, Timeout => 60)
-				or die "Cannot contact $host: $!";
-	$ftp->login('anonymous') or die "Can't login ($host): " . $ftp->message;
-	$ftp->cwd('/pub/musicbrainz/data/fullexport/')
-		or die "Can't change directory ($host): " . $ftp->message;
-	my @ls = $ftp->ls('-l latest*');
-	$latest = substr($ls[0], length($ls[0]) - 15, 15);
-	print "The latest is mbdump is '$latest'\n";
-	$ftp->cwd("/pub/musicbrainz/data/fullexport/$latest")
-			or die "Can't change directory (ftp.musicbrainz.org): " . $ftp->message;
+
+	if ($g_use_http){
+		print "Using http\n";
+		# get content of LATEST file - name of latest export directory
+		my $ua = LWP::UserAgent->new();
+		my $request = HTTP::Request->new('GET', "http://$host$path/LATEST");
+		my $resp = $ua->request($request);
+		if ($resp->is_success) {
+			$latest = $resp->content;
+			# trim
+			$latest =~ s/^\s+|\s+$//g;
+			print "The latest is mbdump is '$latest'\n";
+		} else {
+			die "Can't access LATEST file";
+		}
+	} else {
+		print "Logging into MusicBrainz FTP ($host)...\n";
+		my $ftp = Net::FTP->new($host, Timeout => 60)
+					or die "Cannot contact $host: $!";
+		$ftp->login('anonymous') or die "Can't login ($host): " . $ftp->message;
+		$ftp->cwd($path)
+			or die "Can't change directory ($host): " . $ftp->message;
+		my @ls = $ftp->ls('-l latest*');
+		$latest = substr($ls[0], length($ls[0]) - 15, 15);
+		print "The latest is mbdump is '$latest'\n";
+		$ftp->cwd("$path/$latest")
+				or die "Can't change directory (ftp.musicbrainz.org): " . $ftp->message;
+
+		# probably need this
+		$ftp->binary();
+	}
 			
 	@files = (
-                'mbdump-cover-art-archive.tar.bz2',
+		'mbdump-cover-art-archive.tar.bz2',
 		'mbdump-stats.tar.bz2',
 		'mbdump-derived.tar.bz2',
 		'mbdump.tar.bz2'
 	);
-	
-	# probably need this
-	$ftp->binary();
 	
 	foreach my $file (@files) {
 		print localtime() . ": Downloading $file... ";
@@ -436,8 +454,13 @@ sub mbz_raw_download {
 		if(-e "replication/$file") {
 			print "File already downloaded\n";
 		} else {
-			$ftp->get($file, "replication/$file")
-				or die("Unable to download file $file: " . $ftp->message);
+			if ($g_use_http){
+				# this dies on request failure
+				mbz_download_file("http://$host$path/$latest/$file", "replication/$file");
+			} else {
+				$ftp->get($file, "replication/$file")
+					or die("Unable to download file $file: " . $ftp->message);
+			}
 			print "Done\n";
 		}
 	}

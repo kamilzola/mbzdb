@@ -10,8 +10,9 @@ $g_ask    = 1;
 $g_pipe_bzip = 0;
 $g_compress_prog = null;
 $g_parallel = 0;
+$g_use_http = false;
 
-Getopt::Mixed::init('bzip:s action:i ask:i pipe-bzip:i parallel:i');
+Getopt::Mixed::init('bzip:s action:i ask:i pipe-bzip:i parallel:i http');
 while( my( $option, $value, $pretty ) = Getopt::Mixed::nextOption() )
 {
     OPTION: {
@@ -35,6 +36,10 @@ while( my( $option, $value, $pretty ) = Getopt::Mixed::nextOption() )
         $g_parallel = $value if $value;
         last OPTION;
       };
+	  $option eq 'http' and do {
+		$g_use_http = true;
+		last OPTION;
+	  };
     }
 }
 
