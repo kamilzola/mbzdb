@@ -29,6 +29,11 @@ perl -MCPAN -e install DBD::mysql
     init.pl options from the interactive menu (indexing, foreign keys creation,
     plugins initialization).
 
+X.Y
+  * Download files using http:				./init.pl --http
+  * Updates/replication download using metabrainz api:	./update.pl --token=<YOUR_ACCESS_TOKEN>
+  ** Access token can be obtained at https://metabrainz.org/supporters/account-type
+
 ===== Further improvements =====
 Some ideas may be worth looking at:
   * Create primary keys before LOAD  DATA: https://dev.mysql.com/doc/refman/5.6/en/optimizing-innodb-ddl-operations.html
