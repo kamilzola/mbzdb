@@ -10,6 +10,9 @@ $f_onlypending = 0;
 $f_skiptorep = 0;
 $f_truncatetables = 0;
 
+# metabrainz access token
+$g_token = "";
+
 require "settings.pl";
 require "settings_$g_db_rdbms.pl";
 require "languages/$g_language.pl";
@@ -36,6 +39,8 @@ foreach $ARG (@ARGV) {
 		$f_onlypending = 1;
 	} elsif($parts[0] eq "-g" || $parts[0] eq "--skiptorep") {
 		$f_skiptorep = int($parts[1]);
+	} elsif($parts[0] eq "-a" || $parts[0] eq "--token") {
+		$g_token = $parts[1];
 	} elsif($parts[0] eq "-h" || $parts[0] eq "--help") {
 		mbz_show_update_help();
 		exit(0);

@@ -44,6 +44,9 @@ $g_statidx_url  = "$schema_base/admin/sql/statistics/CreateIndexes.sql";
 $g_rep_host = "ftp.musicbrainz.org";
 $g_rep_url = "/pub/musicbrainz/data/replication";
 
+# Metabrainz api URL
+$g_api_url = "https://metabrainz.org/api/musicbrainz/";
+
 # Kill the update script if a duplicate error (i.e. a duplicate unique key) occurs. It is
 # recommended you leave this at 0.
 $g_die_on_dupid = 0;

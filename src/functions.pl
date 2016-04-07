@@ -131,13 +131,20 @@ sub mbz_download_replication {
 	$localfile = "replication/replication-$id.tar.bz2";
 	$file = "replication-$id.tar.bz2";
 	
-	my $ftp = Net::FTP->new($g_rep_host, Timeout => 60, Passive => 1)
-				or die "Cannot contact $host: $!";
-	$ftp->login('anonymous') or die "Can't login ($host): " . $ftp->message;
-	$ftp->cwd($g_rep_url)
-		or die "Can't change directory ($g_rep_url): " . $ftp->message;
-	$ftp->binary();
-	$ftp->get($file, $localfile) or $found = 0;
+	if ($g_token eq ''){
+		# no access token - use ftp
+		my $ftp = Net::FTP->new($g_rep_host, Timeout => 60, Passive => 1)
+					or die "Cannot contact $host: $!";
+		$ftp->login('anonymous') or die "Can't login ($host): " . $ftp->message;
+		$ftp->cwd($g_rep_url)
+			or die "Can't change directory ($g_rep_url): " . $ftp->message;
+		$ftp->binary();
+		$ftp->get($file, $localfile) or $found = 0;
+	} else {
+		# access token present - use metabrainz api
+		# dies on request failure
+		mbz_download_file("$g_api_url$file?token=$g_token", "replication/$file");
+	}
 	
 	print "Done\n";
 	return $found;
